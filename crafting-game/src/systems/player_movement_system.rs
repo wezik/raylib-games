@@ -1,8 +1,6 @@
-use raylib::RaylibHandle;
-
 use crate::Game;
 
-pub fn update(game: &mut Game, rl: &RaylibHandle) {
+pub fn update(game: &mut Game) {
     let Some(player) = game.player_controlled.first() else {
         return;
     };
@@ -16,5 +14,5 @@ pub fn update(game: &mut Game, rl: &RaylibHandle) {
     };
 
     let direction = game.input_state.move_intent.normalized();
-    *position += direction * *speed * rl.get_frame_time();
+    *position += direction * *speed * game.delta_time;
 }

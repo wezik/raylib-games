@@ -1,5 +1,3 @@
-use raylib::RaylibHandle;
-
 use crate::Game;
 
 #[derive(Debug)]
@@ -7,7 +5,7 @@ pub struct MoveTowards {
     pub range: f32,
 }
 
-pub fn update(game: &mut Game, rl: &RaylibHandle) {
+pub fn update(game: &mut Game) {
     let Some(player) = game.player_controlled.first() else {
         return;
     };
@@ -20,7 +18,7 @@ pub fn update(game: &mut Game, rl: &RaylibHandle) {
     };
 
     for (entity_id, move_towards) in &game.move_towards {
-        let Some(position) = game.position.get_mut(entity_id) else {
+        let Some(pos) = game.position.get_mut(entity_id) else {
             continue;
         };
 
@@ -28,12 +26,13 @@ pub fn update(game: &mut Game, rl: &RaylibHandle) {
             continue;
         };
 
-        let distance = target - *position;
-        if distance.length() > move_towards.range {
+        let delta = target - *pos;
+        let dist = delta.length();
+        if dist > move_towards.range {
             continue;
         }
 
-        let direction = distance.normalized();
-        *position += direction * *speed * rl.get_frame_time();
+        let direction = delta.normalized();
+        *pos += direction * *speed * game.delta_time;
     }
 }

@@ -1,8 +1,8 @@
 use raylib::{
-    RaylibHandle,
     camera::Camera2D,
     ffi::{KeyboardKey, MouseButton},
     math::Vector2,
+    RaylibHandle,
 };
 
 use crate::{components::EntityId, systems::building_system::BuildingType};
@@ -55,10 +55,8 @@ impl InputState {
 
         if rl.is_key_pressed(KeyboardKey::KEY_B) {
             if self.build_place_intent.is_none() {
-                let intent = BuildIntent {
-                    building_type: BuildingType::Test,
-                    position: mouse_pos_in_world,
-                };
+                let intent =
+                    BuildIntent { building_type: BuildingType::Test, position: mouse_pos_in_world };
                 self.build_intent = Some(intent);
             }
         }
@@ -75,6 +73,8 @@ impl InputState {
 
         if rl.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
             if self.build_place_intent.is_some() {
+                // TODO: This doesnt delete the shadow for the building since its an already
+                // existing entity
                 self.build_place_intent = None;
             } else {
                 self.close_intent = true;

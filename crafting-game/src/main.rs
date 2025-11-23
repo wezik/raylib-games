@@ -4,9 +4,15 @@ use std::collections::HashMap;
 use raylib::math::Vector2;
 
 use crate::{
-    components::{Draw, EntityId, building, monster, player},
+    components::{building, monster, player, Draw, EntityId},
     systems::{
-        building_system::{self, BuildingType}, camera_system, drawing_system, input_system::InputState, monster_follow_player_system::{self, MoveTowards}, physics_system::{self, CircleCollider2D}, player_movement_system::{self}, spawn_system
+        building_system::{self, BuildingType},
+        camera_system, drawing_system,
+        input_system::InputState,
+        monster_follow_player_system::{self, MoveTowards},
+        physics_system::{self, CircleCollider2D},
+        player_movement_system::{self},
+        spawn_system,
     },
 };
 
@@ -15,8 +21,12 @@ mod systems;
 
 #[derive(Default, Debug)]
 struct Game {
+    // temp states
     pub next_entity_id: usize,
     pub input_state: InputState,
+    pub delta_time: f32,
+    pub fixed_delta_time: f32,
+    pub accumulated_fixed_delta_time: f32,
     // components
     pub player_controlled: Vec<EntityId>,
     pub position: HashMap<EntityId, Vector2>,
@@ -40,8 +50,7 @@ impl Game {
             SpawnEntity::Monster(position) => monster::spawn(self, position),
             SpawnEntity::BuildingShadow(_building_type, position) => {
                 building::spawn_shadow(self, position)
-            }
-            // SpawnEntity::Building(building_type, position) => building::spawn(self, position),
+            } // SpawnEntity::Building(building_type, position) => building::spawn(self, position),
         }
     }
 }
@@ -56,37 +65,37 @@ pub enum SpawnEntity {
 fn main() {
     let width = 800.0;
     let height = 600.0;
-    let (mut rl, thread) = raylib::init()
-        .size(width as i32, height as i32)
-        .title("Crafting Game")
-        .build();
+    let (mut rl, thread) =
+        raylib::init().size(width as i32, height as i32).title("Crafting Game").build();
 
     rl.set_exit_key(None);
 
     let mut camera = Camera2D {
         target: Vector2::default(),
-        offset: Vector2 {
-            x: width / 2.0,
-            y: height / 2.0,
-        },
+        offset: Vector2 { x: width / 2.0, y: height / 2.0 },
         rotation: 0.0,
         zoom: 1.0,
     };
 
     let mut game = Game::default();
     game.spawn(SpawnEntity::Player(Vector2::default()));
+    game.fixed_delta_time = 1.0 / 128.0;
 
     while !game.input_state.close_intent {
+        game.delta_time = rl.get_frame_time();
+        game.accumulated_fixed_delta_time += game.delta_time;
         game.input_state.update(&rl, &camera);
 
         // delta update
-        player_movement_system::update(&mut game, &rl);
+        player_movement_system::update(&mut game);
         camera_system::update(&mut game, &mut camera);
         spawn_system::update(&mut game);
-        monster_follow_player_system::update(&mut game, &rl);
+        monster_follow_player_system::update(&mut game);
         building_system::update(&mut game);
-        // TOOD: MOVE TO FIXED UPDATE
-        physics_system::update(&mut game);
+        while game.accumulated_fixed_delta_time > game.fixed_delta_time {
+            game.accumulated_fixed_delta_time -= game.fixed_delta_time;
+            physics_system::update(&mut game);
+        }
 
         // draw
         let mut d = rl.begin_drawing(&thread);
