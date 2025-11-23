@@ -14,20 +14,14 @@ pub struct InputState {
     pub close_intent: bool,
 
     pub build_intent: Option<BuildIntent>,
-    pub build_place_intent: Option<BuildPlaceIntent>,
 }
 
 #[derive(PartialEq, Clone, Copy, Debug)]
-pub struct BuildIntent {
-    pub building_type: BuildingType,
-    pub position: Vector2,
-}
-
-#[derive(PartialEq, Clone, Copy, Debug)]
-pub struct BuildPlaceIntent {
-    pub entity_id: EntityId,
-    pub position: Vector2,
-    pub confirmed: bool,
+pub enum BuildIntent {
+    Initial(BuildingType, Vector2),
+    Ghost(EntityId, Vector2),
+    Confirmed(EntityId),
+    Canceled(EntityId),
 }
 
 impl InputState {
@@ -54,28 +48,31 @@ impl InputState {
         }
 
         if rl.is_key_pressed(KeyboardKey::KEY_B) {
-            if self.build_place_intent.is_none() {
-                let intent =
-                    BuildIntent { building_type: BuildingType::Test, position: mouse_pos_in_world };
-                self.build_intent = Some(intent);
+            if self.build_intent.is_none() {
+                self.build_intent =
+                    Some(BuildIntent::Initial(BuildingType::Test, mouse_pos_in_world));
             }
         }
 
-        if let Some(intent) = &mut self.build_place_intent {
-            intent.position = mouse_pos_in_world;
+        match self.build_intent {
+            Some(BuildIntent::Ghost(entity_id, _)) => {
+                self.build_intent = Some(BuildIntent::Ghost(entity_id, mouse_pos_in_world));
+            }
+            _ => {} // noop
         }
 
         if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-            if let Some(intent) = &mut self.build_place_intent {
-                intent.confirmed = true;
+            match self.build_intent {
+                Some(BuildIntent::Ghost(entity_id, _)) => {
+                    self.build_intent = Some(BuildIntent::Confirmed(entity_id));
+                }
+                _ => {} // noop
             }
         }
 
         if rl.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
-            if self.build_place_intent.is_some() {
-                // TODO: This doesnt delete the shadow for the building since its an already
-                // existing entity
-                self.build_place_intent = None;
+            if let Some(BuildIntent::Ghost(entity_id, _)) = self.build_intent {
+                self.build_intent = Some(BuildIntent::Canceled(entity_id));
             } else {
                 self.close_intent = true;
             }

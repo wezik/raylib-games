@@ -13,6 +13,7 @@ use crate::{
         physics_system::{self, CircleCollider2D},
         player_movement_system::{self},
         spawn_system,
+        sprite_system::{self, SpriteCache},
     },
 };
 
@@ -33,6 +34,7 @@ struct Game {
     pub draw: HashMap<EntityId, Draw>,
     pub speed: HashMap<EntityId, f32>,
     pub move_towards: HashMap<EntityId, MoveTowards>,
+    pub sprite: SpriteCache,
     // physics
     pub circle_collider_2d: HashMap<EntityId, CircleCollider2D>,
 }
@@ -48,8 +50,8 @@ impl Game {
         match entity {
             SpawnEntity::Player(position) => player::spawn(self, position),
             SpawnEntity::Monster(position) => monster::spawn(self, position),
-            SpawnEntity::BuildingShadow(_building_type, position) => {
-                building::spawn_shadow(self, position)
+            SpawnEntity::BuildingGhost(_building_type, position) => {
+                building::spawn_ghost(self, position)
             } // SpawnEntity::Building(building_type, position) => building::spawn(self, position),
         }
     }
@@ -59,7 +61,7 @@ pub enum SpawnEntity {
     Player(Vector2),
     Monster(Vector2),
     // Building(BuildingType, Vector2),
-    BuildingShadow(BuildingType, Vector2),
+    BuildingGhost(BuildingType, Vector2),
 }
 
 fn main() {
@@ -92,6 +94,9 @@ fn main() {
         spawn_system::update(&mut game);
         monster_follow_player_system::update(&mut game);
         building_system::update(&mut game);
+        sprite_system::update(&mut game, &mut rl, &thread);
+
+        // fixed delta update
         while game.accumulated_fixed_delta_time > game.fixed_delta_time {
             game.accumulated_fixed_delta_time -= game.fixed_delta_time;
             physics_system::update(&mut game);
@@ -99,7 +104,7 @@ fn main() {
 
         // draw
         let mut d = rl.begin_drawing(&thread);
-        drawing_system::update(&mut d, &game, &camera);
+        drawing_system::draw(&mut d, &game, &camera);
         d.draw_fps(10, 10);
     }
 }

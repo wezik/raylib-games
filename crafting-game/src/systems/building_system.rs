@@ -1,4 +1,4 @@
-use crate::{components::building, systems::input_system::BuildPlaceIntent, Game, SpawnEntity};
+use crate::{components::building, systems::input_system::BuildIntent, Game, SpawnEntity};
 
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum BuildingType {
@@ -6,20 +6,24 @@ pub enum BuildingType {
 }
 
 pub fn update(game: &mut Game) {
-    if let Some(intent) = game.input_state.build_intent {
-        // transform build intent into a build_place_intent shadow
-        let entity_id =
-            game.spawn(SpawnEntity::BuildingShadow(intent.building_type, intent.position));
-        game.input_state.build_intent = None;
-        let follow_up = BuildPlaceIntent { entity_id, position: intent.position, confirmed: false };
-        game.input_state.build_place_intent = Some(follow_up);
-    };
-
-    if let Some(intent) = game.input_state.build_place_intent {
-        game.position.insert(intent.entity_id, intent.position);
-        if intent.confirmed {
-            building::shadow_into_building(game, intent.entity_id);
-            game.input_state.build_place_intent = None;
-        }
+    match game.input_state.build_intent {
+        None => {} // noop
+        Some(intent) => match intent {
+            BuildIntent::Initial(building_type, position) => {
+                let entity_id = game.spawn(SpawnEntity::BuildingGhost(building_type, position));
+                game.input_state.build_intent = BuildIntent::Ghost(entity_id, position).into();
+            }
+            BuildIntent::Ghost(entity_id, position) => {
+                game.position.insert(entity_id, position);
+            }
+            BuildIntent::Confirmed(entity_id) => {
+                building::ghost_into_building(game, entity_id);
+                game.input_state.build_intent = None;
+            }
+            BuildIntent::Canceled(entity_id) => {
+                building::despawn(game, entity_id);
+                game.input_state.build_intent = None;
+            }
+        },
     }
 }

@@ -6,3 +6,4 @@ pub mod monster_follow_player_system;
 pub mod physics_system;
 pub mod player_movement_system;
 pub mod spawn_system;
+pub mod sprite_system;
