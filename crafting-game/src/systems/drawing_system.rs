@@ -2,7 +2,8 @@ use raylib::{
     camera::Camera2D,
     color::Color,
     math::{Rectangle, Vector2},
-    prelude::{RaylibDraw, RaylibDrawHandle, RaylibMode2DExt}, text::RaylibFont,
+    prelude::{RaylibDraw, RaylibDrawHandle, RaylibMode2DExt},
+    text::RaylibFont,
 };
 
 use crate::Game;
@@ -42,20 +43,20 @@ pub fn draw(d: &mut RaylibDrawHandle, game: &Game, camera: &Camera2D) {
             );
         }
 
-        if let Some(interact_popup) = game.input_state.interact_gui_popup {
-            let font = d.get_font_default();
-            let text_size = font.measure_text("E to interact", 20.0, 1.0);
-            d.draw_text_ex(
-                d.get_font_default(),
-                "E to interact",
-                Vector2 {
-                    x: interact_popup.x - text_size.x / 2.0,
-                    y: interact_popup.y - text_size.y * 2.0,
-                },
-                20.0,
-                1.0,
-                Color::DARKRED,
-            );
-        }
+        // if let Some(interact_popup) = game.input_state.interact_gui_popup {
+        //     let font = d.get_font_default();
+        //     let text_size = font.measure_text("E to interact", 20.0, 1.0);
+        //     d.draw_text_ex(
+        //         d.get_font_default(),
+        //         "E to interact",
+        //         Vector2 {
+        //             x: interact_popup.x - text_size.x / 2.0,
+        //             y: interact_popup.y - text_size.y * 2.0,
+        //         },
+        //         20.0,
+        //         1.0,
+        //         Color::DARKRED,
+        //     );
+        // }
     });
 }

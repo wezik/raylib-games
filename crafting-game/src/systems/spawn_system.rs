@@ -1,10 +1,8 @@
 use crate::{Game, SpawnEntity};
 
+// TODO: Debug system for spawning entities
 pub fn update(game: &mut Game) {
-    let Some(position) = game.input_state.spawn_intent else {
-        return;
-    };
-
-    game.spawn(SpawnEntity::Monster(position));
-    game.input_state.spawn_intent = None;
+    if !game.input_state.dash_pressed { return }
+    let pos = game.input_state.mouse_world;
+    game.spawn(SpawnEntity::Monster(pos));
 }

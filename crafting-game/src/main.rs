@@ -6,21 +6,22 @@ use raylib::math::Vector2;
 use crate::{
     components::{building, monster, player, Draw, EntityId},
     systems::{
-        building_system::{self, BuildingType}, camera_system, drawing_system, input_system::InputState, interact_system::{self, Interact}, monster_follow_player_system::{self, MoveTowards}, physics_system::{self, CircleCollider2D}, player_movement_system::{self}, spawn_system, sprite_system::{self, SpriteCache}
+        building_system::{self, BuildingSystem, BuildingType}, camera_system, drawing_system, input_system::InputState, interact_system::{self, Interact}, monster_follow_system::{self, MoveTowards}, physics_system::{self, CircleCollider2D}, player_movement_system::{self}, spawn_system, sprite_system::{self, SpriteCache}
     },
 };
 
 mod components;
 mod systems;
+// mod ui;
 
 #[derive(Default, Debug)]
 struct Game {
     // temp states
-    pub next_entity_id: usize,
-    pub input_state: InputState,
+    next_entity_id: usize,
     pub delta_time: f32,
     pub fixed_delta_time: f32,
     pub accumulated_fixed_delta_time: f32,
+    pub input_state: InputState,
     // components
     pub player_controlled: Vec<EntityId>,
     pub position: HashMap<EntityId, Vector2>,
@@ -46,8 +47,7 @@ impl Game {
             SpawnEntity::Monster(position) => monster::spawn(self, position),
             SpawnEntity::BuildingGhost(_building_type, position) => {
                 building::spawn_ghost(self, position)
-            }
-            // SpawnEntity::Building(building_type, position) => building::spawn(self, position),
+            } // SpawnEntity::Building(building_type, position) => building::spawn(self, position),
         }
     }
 }
@@ -60,13 +60,11 @@ pub enum SpawnEntity {
 }
 
 fn main() {
+    // window setup
     let width = 800.0;
     let height = 600.0;
-    let (mut rl, thread) =
-        raylib::init().size(width as i32, height as i32).title("Crafting Game").build();
 
-    rl.set_exit_key(None);
-
+    // camera
     let mut camera = Camera2D {
         target: Vector2::default(),
         offset: Vector2 { x: width / 2.0, y: height / 2.0 },
@@ -74,31 +72,42 @@ fn main() {
         zoom: 1.0,
     };
 
+    // game setup
     let mut game = Game::default();
     game.spawn(SpawnEntity::Player(Vector2::default()));
-    game.fixed_delta_time = 1.0 / 128.0;
+    game.fixed_delta_time = 1.0 / 64.0;
+    let (mut rl, thread) =
+        raylib::init()
+        .size(width as i32, height as i32)
+        .title("Crafting Game")
+        .build();
+    rl.set_exit_key(None);
 
-    while !game.input_state.close_intent {
+    // systems
+    let mut building_system = BuildingSystem::default();
+
+    while !rl.window_should_close() {
+        // game update
         game.delta_time = rl.get_frame_time();
         game.accumulated_fixed_delta_time += game.delta_time;
         game.input_state.update(&rl, &camera);
 
-        // delta update
+        // systems update
         player_movement_system::update(&mut game);
         camera_system::update(&mut game, &mut camera);
         spawn_system::update(&mut game);
-        monster_follow_player_system::update(&mut game);
-        building_system::update(&mut game);
+        monster_follow_system::update(&mut game);
+        building_system.update(&mut game);
         sprite_system::update(&mut game, &mut rl, &thread);
-        interact_system::update(&mut game);
+        // interact_system::update(&mut game);
 
-        // fixed delta update
+        // fixed systems update
         while game.accumulated_fixed_delta_time > game.fixed_delta_time {
             game.accumulated_fixed_delta_time -= game.fixed_delta_time;
             physics_system::update(&mut game);
         }
 
-        // draw
+        // drawing systems update
         let mut d = rl.begin_drawing(&thread);
         drawing_system::draw(&mut d, &game, &camera);
         d.draw_fps(10, 10);

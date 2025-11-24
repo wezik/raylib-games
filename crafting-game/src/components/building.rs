@@ -6,7 +6,9 @@ use raylib::{
 use crate::{
     components::{Draw, EntityId},
     systems::{
-        interact_system::Interact, physics_system::{BodyType, CircleCollider2D}, sprite_system::Sprite
+        interact_system::Interact,
+        physics_system::{BodyType, CircleCollider2D},
+        sprite_system::Sprite,
     },
     Game,
 };

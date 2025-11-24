@@ -10,28 +10,22 @@ pub fn update(game: &mut Game) {
         return;
     };
 
-    let target = {
-        let Some(position) = game.position.get(player) else {
-            return;
-        };
-        *position
+    let Some(target) = game.position.get(player).cloned() else {
+        return;
     };
 
-    for (entity_id, move_towards) in &game.move_towards {
-        let Some(pos) = game.position.get_mut(entity_id) else {
+    for (e_id, move_towards) in game.move_towards.iter() {
+        let Some(pos) = game.position.get_mut(e_id) else {
             continue;
         };
 
-        let Some(speed) = game.speed.get(entity_id) else {
+        let Some(speed) = game.speed.get(e_id) else {
             continue;
         };
 
         let delta = target - *pos;
         let dist = delta.length();
-        if dist > move_towards.range {
-            continue;
-        }
-
+        if dist > move_towards.range { continue }
         let direction = delta.normalized();
         *pos += direction * *speed * game.delta_time;
     }
