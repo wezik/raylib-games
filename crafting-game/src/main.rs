@@ -6,14 +6,7 @@ use raylib::math::Vector2;
 use crate::{
     components::{building, monster, player, Draw, EntityId},
     systems::{
-        building_system::{self, BuildingType},
-        camera_system, drawing_system,
-        input_system::InputState,
-        monster_follow_player_system::{self, MoveTowards},
-        physics_system::{self, CircleCollider2D},
-        player_movement_system::{self},
-        spawn_system,
-        sprite_system::{self, SpriteCache},
+        building_system::{self, BuildingType}, camera_system, drawing_system, input_system::InputState, interact_system::{self, Interact}, monster_follow_player_system::{self, MoveTowards}, physics_system::{self, CircleCollider2D}, player_movement_system::{self}, spawn_system, sprite_system::{self, SpriteCache}
     },
 };
 
@@ -35,6 +28,7 @@ struct Game {
     pub speed: HashMap<EntityId, f32>,
     pub move_towards: HashMap<EntityId, MoveTowards>,
     pub sprite: SpriteCache,
+    pub interact: HashMap<EntityId, Interact>,
     // physics
     pub circle_collider_2d: HashMap<EntityId, CircleCollider2D>,
 }
@@ -52,7 +46,8 @@ impl Game {
             SpawnEntity::Monster(position) => monster::spawn(self, position),
             SpawnEntity::BuildingGhost(_building_type, position) => {
                 building::spawn_ghost(self, position)
-            } // SpawnEntity::Building(building_type, position) => building::spawn(self, position),
+            }
+            // SpawnEntity::Building(building_type, position) => building::spawn(self, position),
         }
     }
 }
@@ -95,6 +90,7 @@ fn main() {
         monster_follow_player_system::update(&mut game);
         building_system::update(&mut game);
         sprite_system::update(&mut game, &mut rl, &thread);
+        interact_system::update(&mut game);
 
         // fixed delta update
         while game.accumulated_fixed_delta_time > game.fixed_delta_time {

@@ -7,3 +7,4 @@ pub mod physics_system;
 pub mod player_movement_system;
 pub mod spawn_system;
 pub mod sprite_system;
+pub mod interact_system;

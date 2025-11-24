@@ -12,8 +12,9 @@ pub struct InputState {
     pub move_intent: Vector2,
     pub spawn_intent: Option<Vector2>,
     pub close_intent: bool,
-
     pub build_intent: Option<BuildIntent>,
+    pub interact_intent: bool,
+    pub interact_gui_popup: Option<Vector2>,
 }
 
 #[derive(PartialEq, Clone, Copy, Debug)]
@@ -43,7 +44,11 @@ impl InputState {
             self.move_intent.x += 1.0;
         }
 
-        if rl.is_key_pressed(KeyboardKey::KEY_E) && self.spawn_intent.is_none() {
+        if rl.is_key_pressed(KeyboardKey::KEY_E) {
+            self.interact_intent = true;
+        }
+
+        if rl.is_key_pressed(KeyboardKey::KEY_R) && self.spawn_intent.is_none() {
             self.spawn_intent = Some(mouse_pos_in_world);
         }
 

@@ -1,7 +1,11 @@
 use std::collections::HashMap;
 
 use raylib::{
-    math::Vector2, prelude::RaylibDrawHandle, texture::Texture2D, RaylibHandle, RaylibThread,
+    color::Color,
+    math::{Rectangle, Vector2},
+    prelude::RaylibDrawHandle,
+    texture::Texture2D,
+    RaylibHandle, RaylibThread,
 };
 
 use crate::{components::EntityId, Game};
@@ -28,7 +32,10 @@ impl SpriteCache {
 #[derive(Debug)]
 pub struct Sprite {
     pub texture_path: String,
-    pub frame_size: Vector2,
+    pub frame: Rectangle,
+    pub origin: Vector2,
+    pub scale: Vector2,
+    pub tint: Color,
 }
 
 #[derive(Debug)]
@@ -45,6 +52,11 @@ pub fn update(game: &mut Game, rl: &mut RaylibHandle, thread: &RaylibThread) {
         let Some((entity_id, sprite)) = game.sprite.queue.pop() else {
             panic!("This should never happen ???");
         };
+
+        if game.sprite.loaded.contains_key(&sprite.texture_path) {
+            game.sprite.entities.insert(entity_id, sprite);
+            continue;
+        }
 
         attempted_loads += 1;
         let texture = match rl.load_texture(thread, sprite.texture_path.as_str()) {
