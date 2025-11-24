@@ -50,7 +50,7 @@ pub fn spawn_ghost(game: &mut Game, position: Vector2) -> EntityId {
 // can be used for both ghost and established building
 pub fn despawn(game: &mut Game, entity_id: EntityId) {
     game.position.remove(&entity_id);
-    game.draw.remove(&entity_id); // TODO: change to sprite removal
+    game.sprite.remove(&entity_id);
     game.circle_collider_2d.remove(&entity_id);
 }
 

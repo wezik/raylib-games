@@ -32,14 +32,6 @@ pub struct InputState {
     pub move_right_down: bool,
 }
 
-#[derive(PartialEq, Clone, Copy, Debug)]
-pub enum BuildIntent {
-    Initial(BuildingType, Vector2),
-    Ghost(EntityId, Vector2),
-    Confirmed(EntityId),
-    Canceled(EntityId),
-}
-
 impl InputState {
     pub fn update(&mut self, rl: &RaylibHandle, camera: &Camera2D) {
         self.mouse_screen = rl.get_mouse_position();
@@ -49,6 +41,7 @@ impl InputState {
 
         self.build_pressed = rl.is_key_pressed(KeyboardKey::KEY_B);
         self.cancel_pressed = rl.is_key_pressed(KeyboardKey::KEY_ESCAPE);
+        self.confirm_pressed = rl.is_key_pressed(KeyboardKey::KEY_ENTER);
         self.dash_pressed = rl.is_key_pressed(KeyboardKey::KEY_SPACE);
         self.interact_pressed = rl.is_key_pressed(KeyboardKey::KEY_E);
 

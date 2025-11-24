@@ -27,6 +27,12 @@ impl SpriteCache {
             self.loaded.get(sprite.texture_path.as_str()).map(|loaded_sprite| loaded_sprite)
         })
     }
+
+    pub fn remove(&mut self, entity_id: &EntityId) {
+        // Refcounting the number of references to loaded textures might not be necessary, as as
+        // soon as cache goes out of scope it should be dropped and the textures should be freed
+        self.entities.remove(entity_id);
+    }
 }
 
 #[derive(Debug)]

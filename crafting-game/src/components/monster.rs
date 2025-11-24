@@ -3,7 +3,8 @@ use raylib::{color::Color, math::Vector2};
 use crate::{
     components::{Draw, EntityId},
     systems::{
-        monster_follow_system::MoveTowards, physics_system::{BodyType, CircleCollider2D}
+        monster_follow_system::MoveTowards,
+        physics_system::{BodyType, CircleCollider2D},
     },
     Game,
 };

@@ -25,7 +25,9 @@ pub fn update(game: &mut Game) {
 
         let delta = target - *pos;
         let dist = delta.length();
-        if dist > move_towards.range { continue }
+        if dist > move_towards.range {
+            continue;
+        }
         let direction = delta.normalized();
         *pos += direction * *speed * game.delta_time;
     }
